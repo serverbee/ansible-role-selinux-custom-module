@@ -1,0 +1,16 @@
+---
+
+galaxy_info:
+  role_name: selinux_custom_module
+  author: Philippians413
+  description: Role to install custom SELinux modules.
+  company: "ServerBee, SL"
+  license: "license GPLv3"
+  min_ansible_version: 2.7
+  platforms:
+    - name: EL
+      versions:
+        - 7
+        - 8
+  galaxy_tags:
+    - selinux

@@ -1,0 +1,23 @@
+---
+# defaults file for serverbee.selinux_module
+selinux_config_dir: /etc/selinux
+
+#selinux_custom_modules:
+#  first-custom-module: |
+#    module first-custom-module 1.0;
+#    require {
+#            type myapp_t;
+#            type myapp_port_t;
+#            class tcp_socket name_bind;
+#    }
+#    allow myapp_t myapp_port_t:tcp_socket name_bind;
+#
+#  second-custom-module: |
+#    module second-custom-module 1.0;
+#    require {
+#            class fd use;
+#            type init_t;
+#            type semanage_t;
+#            role system_r;
+#    }
+#    allow second_custom_module init_t:fd use;

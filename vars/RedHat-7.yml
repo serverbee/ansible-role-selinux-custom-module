@@ -1,0 +1,5 @@
+---
+dependent_packages:
+  - libselinux-python
+  - selinux-policy
+  - selinux-policy-devel

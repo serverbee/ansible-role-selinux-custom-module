@@ -1,0 +1,69 @@
+---
+- name: Add the OS specific variables
+  include_vars: "{{ ansible_os_family }}-{{ ansible_distribution_major_version }}.yml"
+
+- name: Ensure that the selinux packages are installed
+  become: true
+  yum:
+    name: "{{ dependent_packages }}"
+    state: present
+
+- name: Create directory
+  file:
+    state: directory
+    path: "{{ selinux_config_dir }}/custom-modules"
+  register: modules_directory
+
+- name: Check if modules already installed
+  shell:
+    cmd: "semodule -l | grep ^{{ item.key }}"
+  register: module_installation_check
+  loop: "{{ selinux_custom_modules|dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+  ignore_errors: true
+  no_log: true
+
+- name: Copy modules files
+  copy:
+    mode: 0700
+    content: "{{ item.value }}"
+    dest: "{{ modules_directory.diff.after.path }}/{{ item.key }}.te"
+  register: module_source_code
+  loop: "{{ selinux_custom_modules|dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+
+- block:
+  - name: Generate SELinux policy module
+    command: "checkmodule -M -m -o {{ item.key }}.mod {{ item.key }}.te"
+    args:
+      chdir: "{{ modules_directory.diff.after.path }}"
+    loop: "{{ selinux_custom_modules|dict2items }}"
+    loop_control:
+      label: "{{ item.key }}"
+
+  - name: Generate SELinux module package
+    command: "semodule_package -o {{ item.key }}.pp -m {{ item.key }}.mod"
+    args:
+      chdir: "{{ modules_directory.diff.after.path }}"
+    loop: "{{ selinux_custom_modules|dict2items }}"
+    loop_control:
+      label: "{{ item.key }}"
+
+  - name: Install module
+    command: "semodule -i {{ item.key }}.pp"
+    args:
+      chdir: "{{ modules_directory.diff.after.path }}"
+    loop: "{{ selinux_custom_modules|dict2items }}"
+    loop_control:
+      label: "{{ item.key }}"
+
+  when:
+    - module_installation_check is failed or
+      module_source_code.changed
+
+- name: Set SELinux to Enforcing Mode
+  selinux:
+    policy: targeted
+    state: enforcing
