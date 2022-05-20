@@ -12,5 +12,6 @@ galaxy_info:
       versions:
         - 7
         - 8
+        - 9
   galaxy_tags:
     - selinux
